@@ -2413,7 +2413,8 @@ void parse_bed_regions(istream& bedstream,
 
 void parse_gff_regions(istream& gffstream,
                        const PathPositionHandleGraph* graph,
-                       vector<Alignment>* out_alignments) {
+                       vector<Alignment>* out_alignments,
+                       bool use_id) {
     out_alignments->clear();
     if (!gffstream) {
         cerr << "Unable to open gff3/gtf file." << endl;
@@ -2431,6 +2432,7 @@ void parse_gff_regions(istream& gffstream,
     string strand;
     string num;
     string annotations;
+    const string tag = use_id ? "ID=" : "Name=";
 
     for (int line = 1; getline(gffstream, row); ++line) {
         // Stop to parse remaining lines when reach to sequence section
@@ -2463,7 +2465,7 @@ void parse_gff_regions(istream& gffstream,
             string name = "";
 
             for (auto& s : vals) {
-                if (s.find("Name=") == 0) {
+                if (s.find(tag) == 0) {
                     name = s.substr(5);
                 }
             }
@@ -2471,8 +2473,8 @@ void parse_gff_regions(istream& gffstream,
             // Skips annotations where the name can not be parsed. Empty names can 
             // results in undefinable behavior downstream. 
             if (name.empty()) {
-                cerr << "warning: could not parse annotation name (Name=), skipping line " << line << endl;  
-                continue;              
+                cerr << "warning: could not parse annotation name (" << tag << "), skipping line " << line << endl;
+                continue;
             }
 
             bool is_reverse = false;

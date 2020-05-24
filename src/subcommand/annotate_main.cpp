@@ -26,6 +26,7 @@ void help_annotate(char** argv) {
          << "    -f, --gff-name FILE    a GFF3 file to convert to GAM. May repeat." << endl
          << "    -g, --ggff             output at GGFF subgraph annotation file instead of GAM (requires -s)" << endl
          << "    -s, --snarls FILE      file containing snarls to expand GFF intervals into" << endl
+         << "    -i, --use-id           when parse GFF3, use id tag as path name instead of name tag" << endl
          << "alignment annotation options:" << endl
          << "    -a, --gam FILE         file of Alignments to annotate (required)" << endl
          << "    -x, --xg-name FILE     xg index of the graph against which the Alignments are aligned (required)" << endl
@@ -96,6 +97,7 @@ int main_annotate(int argc, char** argv) {
     bool novelty = false;
     bool output_ggff = false;
     string snarls_name;
+    bool use_id = false;
 
     int c;
     optind = 2; // force optind past command positional argument
@@ -110,6 +112,7 @@ int main_annotate(int argc, char** argv) {
             {"gff-name", required_argument, 0, 'f'},
             {"ggff", no_argument, 0, 'g'},
             {"snarls", required_argument, 0, 's'},
+            {"use-id", no_argument, 0, 'i'},
             {"novelty", no_argument, 0, 'n'},
             {"threads", required_argument, 0, 't'},
             {"help", required_argument, 0, 'h'},
@@ -141,7 +144,11 @@ int main_annotate(int argc, char** argv) {
         case 'f':
             gff_names.push_back(optarg);
             break;
-            
+
+        case 'i':
+            use_id = true;
+            break;
+
         case 'g':
             output_ggff = true;
             break;
@@ -463,7 +470,7 @@ int main_annotate(int argc, char** argv) {
             for (auto& gff_name : gff_names) {
                 get_input_file(gff_name, [&](istream& gff_stream) {
                     vector<Alignment> buffer;
-                    parse_gff_regions(gff_stream, xg_index, &buffer);
+                    parse_gff_regions(gff_stream, xg_index, &buffer, use_id);
                     vg::io::write_buffered(cout, buffer, 0); // flush
                 });
             }
