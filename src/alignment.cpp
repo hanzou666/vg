@@ -2433,6 +2433,10 @@ void parse_gff_regions(istream& gffstream,
     string annotations;
 
     for (int line = 1; getline(gffstream, row); ++line) {
+        // Stop to parse remaining lines when reach to sequence section
+        if (row.find("##FASTA") == 0) {
+            break;
+        }
         if (row.size() < 2 || row[0] == '#') {
             continue;
         }
